@@ -5,13 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app
 
-RUN pip install --upgrade wheel "poetry==2.2.1"
+COPY /project_tg/requirements.txt .
 
-RUN poetry config virtualenvs.create false
-
-COPY project_tg/pyproject.toml project_tg/poetry.lock ./
-
-RUN poetry install
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY /project_tg .
 
