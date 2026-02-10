@@ -7,6 +7,25 @@ services:
       - .env
     volumes:
       - postgres_data:/var/lib/postgres/data
+    networks:
+      - hh_network
+
+  app_tg:
+    build:
+      dockerfile: Docker_builds/TG_Docker/Dockerfile
+      context: .
+    container_name: app_tg
+    restart: always
+    env_file:
+      - project_tg/.env
+    depends_on:
+      - db_hh
+    networks:
+      - hh_network
+
+networks:
+  hh_network:
+    driver: bridge
 
 volumes:
   postgres_data:
