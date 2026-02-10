@@ -23,6 +23,12 @@ services:
     networks:
       - hh_network
 
+  redis:
+    image: redis:latest
+    restart: always
+    networks:
+      - hh_network
+
 networks:
   hh_network:
     driver: bridge
