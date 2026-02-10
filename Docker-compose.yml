@@ -1,0 +1,12 @@
+services:
+  db_hh:
+    image: postgres:latest
+    container_name: db_hh
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgres/data
+
+volumes:
+  postgres_data:
