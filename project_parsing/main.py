@@ -1,13 +1,24 @@
 import asyncio
 import json
 import os
+import logging
 
 import redis.asyncio as redis
 
 from playwright.async_api import async_playwright
+from database.create_pool_db import pool_async
 
-URL = "https://abakan.hh.ru/search/vacancy?text=playwright&salary=&ored_clusters=true&work_format=REMOTE&suggestId=5559cf1d-25a2-4c82-a36a-bdb2760ae4b0&hhtmFrom=vacancy_search_list&hhtmFromLabel=vacancy_search_line"
-REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+logger = logging.getLogger("ParseData")
+
+text = "playwright"
+work_format = "REMOTE"
+items_on_page = "20"
+experience = "moreThan6"
+
+URL = f"https://abakan.hh.ru/search/vacancy?text={text}&work_format={work_format}&items_on_page={items_on_page}&&experience={experience}"
+
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 
 redis_client = redis.Redis(
     host=REDIS_HOST,
@@ -16,7 +27,7 @@ redis_client = redis.Redis(
 )
 
 
-async def get_hh_page():
+async def get_hh_page(url: str):
     async with async_playwright() as p:
         # Запускаем браузер (headless=True — без открытия окна)
         browser = await p.chromium.launch(headless=True)
@@ -29,7 +40,7 @@ async def get_hh_page():
         page = await context.new_page()
 
         # Переходим по ссылке
-        await page.goto(URL, wait_until="networkidle")
+        await page.goto(url, wait_until="domcontentloaded")
 
         # Можно сделать скриншот, чтобы проверить, не вылезла ли капча
         await page.screenshot(path="./resource/hh_check.png")
@@ -38,6 +49,7 @@ async def get_hh_page():
         content = await page.content()
 
         vacancy = await page.locator('div[data-qa="vacancy-serp__vacancy"]').all()
+        print("Кол-во: ", len(vacancy))
         result = []
 
         for card in vacancy:
@@ -69,7 +81,7 @@ async def get_hh_page():
                 item["skills"] = await page.locator(
                     '[data-qa="skills-element"]'
                 ).all_text_contents()
-
+                logger.info("HOST Reddis: %s", REDIS_HOST)
                 await redis_client.publish(
                     "vacancy_hh",
                     json.dumps(item, ensure_ascii=False),
@@ -77,17 +89,26 @@ async def get_hh_page():
             except Exception as e:
                 print(f"Ошибка при загрузке {item.get('Сcылка')}: {e}")
                 item["skills"] = []
-        with open("./resource/vacancy_file.json", "w", encoding="utf-8") as file:
-            json.dump(
-                result,
-                file,
-                ensure_ascii=False,
-                indent=4,
-            )
 
         await browser.close()
-        return content
+        return result
+
+
+async def main():
+    page = 0
+    result_list = []
+
+    while True:
+        url = URL + f"&page={page}"
+        content = await get_hh_page(url)
+        if len(content) == 0:
+            break
+        result_list.extend(content)
+        page += 1
+        await asyncio.sleep(1)
+
+    await pool_async(result_list)
 
 
 if __name__ == "__main__":
-    asyncio.run(get_hh_page())
+    asyncio.run(main())

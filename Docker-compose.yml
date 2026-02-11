@@ -6,7 +6,10 @@ services:
     env_file:
       - .env
     volumes:
-      - postgres_data:/var/lib/postgres/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
     networks:
       - hh_network
 
@@ -56,6 +59,8 @@ services:
   redis:
     image: redis:latest
     restart: always
+    ports:
+      - "6379:6379"
     networks:
       - hh_network
 
