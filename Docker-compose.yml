@@ -23,6 +23,20 @@ services:
     networks:
       - hh_network
 
+  pars_app:
+    build:
+      dockerfile: Docker_builds/Parsing_Docker/Dockerfile
+      context: .
+    container_name: parse_app
+    restart: always
+    env_file:
+      - project_parsing/.env
+    depends_on:
+      - db_hh
+      - redis
+    networks:
+      - hh_network
+
   redis:
     image: redis:latest
     restart: always
