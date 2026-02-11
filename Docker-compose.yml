@@ -37,6 +37,22 @@ services:
     networks:
       - hh_network
 
+  fastapi_app:
+    build:
+      dockerfile: Docker_builds/FastAPI_Docker/Dockerfile
+      context: .
+    container_name: fastapi_app
+    restart: always
+    env_file:
+      - project_fastapi/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db_hh
+      - redis
+    networks:
+      - hh_network
+
   redis:
     image: redis:latest
     restart: always
