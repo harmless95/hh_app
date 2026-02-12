@@ -11,37 +11,65 @@ POST_HOST = os.getenv("POST_DB", "localhost")
 POSTGRES_DB = os.getenv("POSTGRES_DB", "hh_base")
 
 
-async def pool_async(data: list):
-    db_pool = None
-    try:
-        db_pool = await asyncpg.create_pool(
+class DatabasePG:
+    def __init__(self):
+        self._pool = None
+
+    async def get_pool(self):
+        self._pool = await asyncpg.create_pool(
             user=POSTGRES_USER,
             password=POSTGRES_PASSWORD,
             database=POSTGRES_DB,
             host=POST_HOST,
+            min_size=5,
+            max_size=10,
         )
-        logger.info("Connected to Database")
+        return self._pool
 
-        async with db_pool.acquire() as conn:
-            query = """
-                           INSERT INTO vacancy_data (name_vacancy, name_company, link, skills)
-                           VALUES ($1, $2, $3, $4)
-                           ON CONFLICT (link) DO NOTHING;
-                   """
+    async def pool_async(self, data: list):
+        pool = await self.get_pool()
+        try:
+            async with pool.acquire() as conn:
+                query = """
+                               INSERT INTO vacancy_data (id_vacancy, name_vacancy, name_company, link, skills)
+                               VALUES ($1, $2, $3, $4, $5)
+                               ON CONFLICT (link) DO NOTHING;
+                       """
 
-            list_data = [
-                (
-                    item.get("Название вакансии"),
-                    item.get("Название компании"),
-                    item.get("Сcылка"),
-                    item.get("skills"),
-                )
-                for item in data
-            ]
+                list_data = [
+                    (
+                        item.get("id_vacancy"),
+                        item.get("Название вакансии"),
+                        item.get("Название компании"),
+                        item.get("Сcылка"),
+                        item.get("skills"),
+                    )
+                    for item in data
+                ]
 
-            await conn.executemany(query, list_data)
-    except Exception as e:
-        logger.error(f"Database connection failed: {e}")
-    finally:
-        if db_pool:
-            await db_pool.close()
+                await conn.executemany(query, list_data)
+                logger.info(f"Successfully inserted {len(list_data)} records")
+        except Exception as e:
+            logger.error(f"Database connection failed: {e}")
+
+    async def check_vacancy(self, id_vacancy: str):
+        pool = await self.get_pool()
+        try:
+            async with pool.acquire() as conn:
+                query = """
+                    SELECT * FROM vacancy_data WHERE id_vacancy=$1
+                """
+
+                result_check = await conn.fetchrow(query, id_vacancy)
+                return result_check
+        except Exception as e:
+            logger.error(f"Database connection failed: {e}")
+            return None
+
+    async def close(self):
+        if self._pool:
+            await self._pool.close()
+            logger.info("Database pool closed")
+
+
+db_pg = DatabasePG()

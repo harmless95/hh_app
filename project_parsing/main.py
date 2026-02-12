@@ -6,7 +6,7 @@ import logging
 import redis.asyncio as redis
 
 from playwright.async_api import async_playwright
-from database.create_pool_db import pool_async
+from database.create_pool_db import db_pg
 
 logger = logging.getLogger("ParseData")
 
@@ -27,10 +27,16 @@ redis_client = redis.Redis(
 )
 
 
-async def get_hh_page(url: str):
-    async with async_playwright() as p:
-        # Запускаем браузер (headless=True — без открытия окна)
-        browser = await p.chromium.launch(headless=True)
+async def check(id_vac, conn):
+    try:
+        query = """
+                    SELECT * FROM vacancy_data WHERE id_vacancy=$1
+                """
+        result_check = await conn.fetchrow(query, id_vac)
+    except Exception as e:
+        logger.error(f"Database connection failed: {e}")
+        return None
+    return result_check
 
         # Создаем контекст с эмуляцией реального пользователя
         context = await browser.new_context(
