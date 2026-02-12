@@ -38,27 +38,34 @@ async def check(id_vac, conn):
         return None
     return result_check
 
-        # Создаем контекст с эмуляцией реального пользователя
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
-        )
 
-        page = await context.new_page()
+async def get_hh_page(page, url: str):
 
-        # Переходим по ссылке
-        await page.goto(url, wait_until="domcontentloaded")
+    # Переходим по ссылке
+    await page.goto(url, wait_until="domcontentloaded")
 
-        # Можно сделать скриншот, чтобы проверить, не вылезла ли капча
-        await page.screenshot(path="./resource/hh_check.png")
+    # Можно сделать скриншот, чтобы проверить, не вылезла ли капча
+    await page.screenshot(path="./resource/hh_check.png")
 
-        # Получаем HTML всей страницы
-        content = await page.content()
+    # Получаем HTML всей страницы
+    content = await page.content()
 
-        vacancy = await page.locator('div[data-qa="vacancy-serp__vacancy"]').all()
-        print("Кол-во: ", len(vacancy))
-        result = []
+    vacancy = await page.locator('div[data-qa="vacancy-serp__vacancy"]').all()
+    print("Кол-во: ", len(vacancy))
+    result = []
+    result_id = []
+    pool = await db_pg.get_pool()
 
+    async with pool.acquire() as conn:
         for card in vacancy:
+            id_vac = await card.locator(
+                'div[class="vacancy-card--n77Dj8TY8VIUF0yM font-inter"]'
+            ).get_attribute("id")
+            print("id", id_vac)
+            result_id.append(id_vac)
+            check_db = await check(int(id_vac), conn)
+            if check_db:
+                continue
             titles = await card.locator(
                 '[data-qa="serp-item__title-text"]'
             ).text_content()
@@ -71,6 +78,7 @@ async def check(id_vac, conn):
 
             result.append(
                 {
+                    "id_vacancy": int(id_vac),
                     "Название вакансии": titles,
                     "Название компании": company_name,
                     "Сcылка": link_vacancy,
@@ -95,25 +103,33 @@ async def check(id_vac, conn):
             except Exception as e:
                 print(f"Ошибка при загрузке {item.get('Сcылка')}: {e}")
                 item["skills"] = []
-
-        await browser.close()
+        await conn.close()
         return result
 
 
 async def main():
-    page = 0
-    result_list = []
+    page_num = 0
+    async with async_playwright() as p:
+        # Запускаем браузер (headless=True — без открытия окна)
+        browser = await p.chromium.launch(headless=True)
 
-    while True:
-        url = URL + f"&page={page}"
-        content = await get_hh_page(url)
-        if len(content) == 0:
-            break
-        result_list.extend(content)
-        page += 1
-        await asyncio.sleep(1)
+        # Создаем контекст с эмуляцией реального пользователя
+        context = await browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+        )
 
-    await pool_async(result_list)
+        page = await context.new_page()
+
+        while True:
+            url = URL + f"&page={page_num}"
+            content = await get_hh_page(page, url)
+            if not content:
+                break
+            await db_pg.pool_async(content)
+            page_num += 1
+            await asyncio.sleep(1)
+
+        await browser.close()
 
 
 if __name__ == "__main__":
