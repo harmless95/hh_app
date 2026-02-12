@@ -38,7 +38,7 @@ async def redis_listen():
                     f"🏢 {data.get('Название компании')}\n"
                     f"🔗 <a href='{data.get('Сcылка')}'>Открыть на HH</a>"
                 )
-
+                await asyncio.sleep(0.5)
                 for user_id in active_users:
                     try:
                         await bot.send_message(user_id, text, parse_mode="HTML")
