@@ -37,6 +37,7 @@ services:
     depends_on:
       - db_hh
       - redis
+      - app_tg
     networks:
       - hh_network
 
