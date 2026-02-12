@@ -19,6 +19,8 @@ services:
       context: .
     container_name: app_tg
     restart: always
+    ports:
+      - "4444:4444"
     env_file:
       - project_tg/.env
     depends_on:

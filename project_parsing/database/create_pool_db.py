@@ -52,15 +52,15 @@ class DatabasePG:
         except Exception as e:
             logger.error(f"Database connection failed: {e}")
 
-    async def check_vacancy(self, id_vacancy: str):
+    async def check_url(self, id_telegram: int):
         pool = await self.get_pool()
         try:
             async with pool.acquire() as conn:
                 query = """
-                    SELECT * FROM vacancy_data WHERE id_vacancy=$1
+                    SELECT url FROM users WHERE telegram_id=$1
                 """
 
-                result_check = await conn.fetchrow(query, id_vacancy)
+                result_check = await conn.fetchval(query, id_telegram)
                 return result_check
         except Exception as e:
             logger.error(f"Database connection failed: {e}")

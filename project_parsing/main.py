@@ -15,7 +15,7 @@ work_format = "REMOTE"
 items_on_page = "20"
 experience = "moreThan6"
 
-URL = f"https://abakan.hh.ru/search/vacancy?text={text}&work_format={work_format}&items_on_page={items_on_page}&&experience={experience}"
+# URL = f"https://abakan.hh.ru/search/vacancy?text={text}&work_format={work_format}&items_on_page={items_on_page}&&experience={experience}"
 
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -103,12 +103,13 @@ async def get_hh_page(page, url: str):
             except Exception as e:
                 print(f"Ошибка при загрузке {item.get('Сcылка')}: {e}")
                 item["skills"] = []
-        await conn.close()
         return result
 
 
 async def main():
     page_num = 0
+    URL = await db_pg.check_url(id_telegram=5103681164)
+    print("url:", URL)
     async with async_playwright() as p:
         # Запускаем браузер (headless=True — без открытия окна)
         browser = await p.chromium.launch(headless=True)
