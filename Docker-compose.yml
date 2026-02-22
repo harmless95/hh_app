@@ -33,13 +33,14 @@ services:
       dockerfile: Docker_builds/Parsing_Docker/Dockerfile
       context: .
     container_name: parse_app
-    restart: always
+#    restart: always
     env_file:
       - project_parsing/.env
     depends_on:
       - db_hh
       - redis
       - app_tg
+      - fastapi_app
     networks:
       - hh_network
 
@@ -50,7 +51,7 @@ services:
     container_name: fastapi_app
     restart: always
     env_file:
-      - project_fastapi/.env
+      - app/.env
     ports:
       - "8000:8000"
     depends_on:
