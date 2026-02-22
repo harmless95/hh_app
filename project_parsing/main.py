@@ -1,17 +1,17 @@
 import asyncio
 import os
 import logging
+import httpx
 
 import redis.asyncio as redis
 
 from playwright.async_api import async_playwright
-from database.create_pool_db import db_pg
 
 logger = logging.getLogger("ParseData")
 
 
 URL = f"https://hh.ru/search/vacancy?text=python&items_on_page=20"
-# URL_ID = "http://my_app/check/id"
+url_app = "http://fastapi_app:8000/v1/data/"
 
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -78,9 +78,9 @@ async def get_hh_page(page, url):
         list_vacancy.append(
             {
                 "id_vacancy": int(id_vac),
-                "Название вакансии": titles,
-                "Название компании": company_name,
-                "Сcылка": link_vacancy,
+                "name_vacancy": titles,
+                "name_company": company_name,
+                "link": link_vacancy,
             }
         )
         list_id_vacancy.append(id_vac)
@@ -101,7 +101,7 @@ async def get_link(page, list_vacancy: list):
             logger.info("Загруженна вакансия: %s", (idx + 1))
             print("загружен", idx)
             await page.goto(
-                item.get("Сcылка"),
+                item.get("link"),
                 wait_until="domcontentloaded",
                 timeout=15000,
             )
@@ -109,7 +109,7 @@ async def get_link(page, list_vacancy: list):
                 '[data-qa="skills-element"]'
             ).all_text_contents()
         except Exception as e:
-            print(f"Ошибка при загрузке {item.get('Сcылка')}: {e}")
+            print(f"Ошибка при загрузке {item.get('link')}: {e}")
             item["skills"] = []
     return list_vacancy
 
@@ -137,7 +137,16 @@ async def main():
             page_num += 1
             await asyncio.sleep(1)
         list_data = await get_link(page=page, list_vacancy=list_content)
-        await db_pg.pool_async(list_data)
+
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(url=url_app, json=list_data)
+                response.raise_for_status()
+                print(f"Успешно отправлено: {len(list_data)} вакансий")
+            except httpx.HTTPStatusError as e:
+                print(f"Ошибка сервера: {e.response.status_code}")
+            except Exception as e:
+                print(f"Ошибка подключения: {e}")
 
         await browser.close()
 
