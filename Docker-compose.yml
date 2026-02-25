@@ -44,6 +44,21 @@ services:
     networks:
       - hh_network
 
+  handler_api:
+    build:
+      dockerfile: Docker_builds/HandlerAPI_Docker/Dockerfile
+      context: .
+    container_name: handler_api
+    #    restart: always
+#    env_file:
+#      - project_parsing/.env
+    depends_on:
+      - db_hh
+      - app_tg
+      - fastapi_app
+    networks:
+      - hh_network
+
   fastapi_app:
     build:
       dockerfile: Docker_builds/FastAPI_Docker/Dockerfile
