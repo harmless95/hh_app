@@ -1,31 +1,37 @@
 import asyncio
-import json
 import os
 import logging
 import httpx
+import uvicorn
+import threading
 
 from aiogram import Bot, Dispatcher, html, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
-# import redis.asyncio as redis
-
+from fastapi import FastAPI
 
 TG_TOKEN = os.getenv("TG_TOKEN")
-# REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+url_app = os.getenv("URL_APP", "http://fastapi_app:8000/v1/data/")
 
-# redis_client = redis.Redis(
-#     host=REDIS_HOST,
-#     port=6379,
-#     decode_responses=True,
-# )
 logger = logging.getLogger("TG_app")
 
 bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
-active_users = set()
-url_app = "http://fastapi_app:8000/v1/data/tg/"
+
+app_health = FastAPI()
+
+
+@app_health.get("/")
+def health():
+    return {"status": "bot is running"}
+
+
+def run_health_server():
+    # Render передает порт в переменной PORT
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app_health, host="0.0.0.0", port=port)
 
 
 async def get_vac(message: Message):
@@ -49,7 +55,6 @@ async def get_vac(message: Message):
 
 @dp.message(CommandStart())
 async def command_start(message: Message):
-    active_users.add(message.from_user.id)
     await message.answer(
         f"Привет, <b>{message.from_user.full_name}</b>! Укажите по каким навыкам искать?",
         parse_mode="HTML",
@@ -72,7 +77,7 @@ async def command_text(message: Message):
 
 
 async def main():
-    # asyncio.create_task(redis_listen())
+    threading.Thread(target=run_health_server, daemon=True).start()
     await dp.start_polling(bot)
 
 
