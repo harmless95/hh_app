@@ -8,7 +8,7 @@ URL_APP = os.getenv("URL_APP", "http://fastapi_app:8000/v1/data/")
 # URL для поиска вакансий
 URL_VACANCY = os.getenv("URL_VACANCY", "https://api.hh.ru/vacancies/")
 headers = {
-    "User-Agent": "MyHHBot/1.0 (contact@example.com)",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "Accept": "application/json",
 }
 
