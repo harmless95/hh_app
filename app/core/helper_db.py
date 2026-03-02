@@ -2,7 +2,7 @@ import os
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-URL = os.getenv("URL_DB")
+URL_DB = os.getenv("URL_DB")
 
 
 class HelperDB:
@@ -25,4 +25,4 @@ class HelperDB:
             yield session
 
 
-help_session = HelperDB(url=str(URL), echo=False)
+help_session = HelperDB(url=str(URL_DB), echo=False)
