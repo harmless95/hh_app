@@ -18,11 +18,20 @@ async def data_save_db(session: AsyncSession, data: List[Vacancy]):
     new_vacancy = []
     for dt in data:
         if dt.id_vacancy in vac:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Invalid {dt.id_vacancy}",
-            )
-        new_vacancy.append(VacancyData(**dt.model_dump()))
+            continue
+
+        lower_skills = [skill.lower() for skill in (dt.skills or [])]
+
+        # Создаем объект модели, приводя строковые поля к lower()
+        new_obj = VacancyData(
+            id_vacancy=dt.id_vacancy,
+            name_vacancy=dt.name_vacancy.lower(),
+            name_company=dt.name_company.lower() if dt.name_company else None,
+            link=dt.link,  # Ссылки лучше не трогать
+            skills=lower_skills,
+        )
+
+        new_vacancy.append(new_obj)
     session.add_all(new_vacancy)
     try:
         await session.commit()
@@ -36,7 +45,7 @@ async def get_tg(
     session: AsyncSession,
     data_tg: str,
 ):
-    stmt = select(VacancyData).where(VacancyData.skills.any(data_tg))
+    stmt = select(VacancyData).where(VacancyData.skills.any(data_tg.lower()))
     result = await session.execute(stmt)
     list_vac = result.scalars().all()
     return [VacancyTG.model_validate(item) for item in list_vac]
