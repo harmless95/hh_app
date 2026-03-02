@@ -1,9 +1,10 @@
 import httpx
+import os
 
-url_app = "http://fastapi_app:8000/v1/data/"
+URL_APP = os.getenv("URL_APP", "http://fastapi_app:8000/v1/data/")
 
 # URL для поиска вакансий
-url = "https://api.hh.ru/vacancies"
+URL_VACANCY = os.getenv("URL_VACANCY", "https://api.hh.ru/vacancies/")
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "Accept": "application/json",
@@ -19,7 +20,7 @@ params = {
 
 
 def main():
-    response = httpx.get(url, params=params, headers=headers)
+    response = httpx.get(URL_VACANCY, params=params, headers=headers)
 
     result_data = []
     if response.status_code == 200:
@@ -35,7 +36,7 @@ def main():
                 "created_at": item.get("created_at"),
             }
             id_vac = current_vacancy["id_vacancy"]
-            url_id = f"https://api.hh.ru/vacancies/{id_vac}"
+            url_id = f"{URL_VACANCY}{id_vac}"
             response_vac = httpx.get(url=url_id, headers=headers)
             if response_vac.status_code == 200:
                 data_vac = response_vac.json()
@@ -48,7 +49,7 @@ def main():
         print(f"Ошибка: {response.status_code}")
 
     try:
-        response = httpx.post(url=url_app, json=result_data)
+        response = httpx.post(url=URL_APP, json=result_data)
         response.raise_for_status()
         print(f"Успешно отправлено: {len(result_data)} вакансий")
     except httpx.HTTPStatusError as e:
