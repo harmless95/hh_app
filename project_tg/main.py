@@ -38,6 +38,7 @@ async def get_vac(message: Message):
     text = message.text
     async with httpx.AsyncClient() as client:
         response = await client.post(url=url_app, json=text)
+        logger.warning("Status: %s", response.status_code)
         response.raise_for_status()
         vacancies = response.json()
         for item in vacancies[:10]:
