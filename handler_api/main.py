@@ -1,3 +1,5 @@
+import time
+
 import httpx
 import os
 
@@ -43,6 +45,7 @@ def main():
                 skills = data_vac.get("key_skills") or []
                 current_vacancy["skills"] = [atr.get("name") for atr in skills]
             result_data.append(current_vacancy)
+            time.sleep(1)
 
         print(result_data)
     else:
