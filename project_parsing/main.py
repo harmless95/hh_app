@@ -2,6 +2,7 @@ import asyncio
 import os
 import logging
 import httpx
+import ssl
 
 import redis.asyncio as redis
 
@@ -16,12 +17,9 @@ url_app = os.getenv("URL_APP", "http://fastapi_app:8000/v1/data/")
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 
-redis_client = redis.Redis(
-    host=REDIS_HOST,
-    port=6379,
-    ssl=True,
-    ssl_cert_reqs=None,
-    decode_responses=True,
+redis_client = redis.from_url(
+    REDIS_HOST,
+    ssl_cert_reqs=ssl.CERT_NONE,
 )
 name_channel = "list_id_vacancy"
 name_channel_duble = "duble_vacancy"
