@@ -19,6 +19,8 @@ REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 redis_client = redis.Redis(
     host=REDIS_HOST,
     port=6379,
+    ssl=True,
+    ssl_cert_reqs=None,
     decode_responses=True,
 )
 name_channel = "list_id_vacancy"
