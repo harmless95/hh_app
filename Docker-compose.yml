@@ -15,8 +15,8 @@ services:
 
   app_tg:
     build:
-      dockerfile: Docker_builds/TG_Docker/Dockerfile
-      context: .
+      dockerfile: project_tg/Dockerfile
+      context: project_tg
     container_name: app_tg
     restart: always
     ports:
@@ -30,8 +30,8 @@ services:
 
   pars_app:
     build:
-      dockerfile: Docker_builds/Parsing_Docker/Dockerfile
-      context: .
+      dockerfile: project_parsing/Dockerfile
+      context: project_parsing
     container_name: parse_app
 #    restart: always
     env_file:
@@ -46,8 +46,8 @@ services:
 
   handler_api:
     build:
-      dockerfile: Docker_builds/HandlerAPI_Docker/Dockerfile
-      context: .
+      dockerfile: handler_api/Dockerfile
+      context: handler_api
     container_name: handler_api
     #    restart: always
 #    env_file:
@@ -61,8 +61,8 @@ services:
 
   fastapi_app:
     build:
-      dockerfile: Docker_builds/FastAPI_Docker/Dockerfile
-      context: .
+      dockerfile: app/Dockerfile
+      context: app
     container_name: fastapi_app
     restart: always
     env_file:

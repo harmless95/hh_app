@@ -1,10 +1,10 @@
-FROM python:3.14-slim
+FROM python:3.12-slim
 WORKDIR /handler_api
 
-COPY /handler_api/requirements.txt .
+COPY ./requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY /handler_api .
+COPY . .
 
 ENTRYPOINT ["python", "main.py"]
