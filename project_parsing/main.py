@@ -10,8 +10,8 @@ from playwright.async_api import async_playwright
 logger = logging.getLogger("ParseData")
 
 
-URL = f"https://hh.ru/search/vacancy?text=python&items_on_page=20"
-url_app = "http://fastapi_app:8000/v1/data/"
+URL = os.getenv("URL", "https://hh.ru/search/vacancy?text=python&items_on_page=20")
+url_app = os.getenv("URL_APP", "http://fastapi_app:8000/v1/data/")
 
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
