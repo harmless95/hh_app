@@ -19,7 +19,6 @@ logger = logging.getLogger("TG_app")
 
 bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
-
 app_health = FastAPI()
 
 
