@@ -11,16 +11,19 @@ from playwright.async_api import async_playwright
 logger = logging.getLogger("ParseData")
 
 
-URL = os.getenv("URL", "https://hh.ru/search/vacancy?text=python&items_on_page=20")
-url_app = os.getenv("URL_APP", "http://fastapi_app:8000/v1/data/")
+URL = os.getenv("URL", "https://hh.ru/search/vacancy?text=fastapi&items_on_page=20")
+url_app = os.getenv("URL_APP", "https://hh-app-o6yo.onrender.com")
 
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 
-redis_client = redis.from_url(
-    REDIS_HOST,
-    ssl_cert_reqs=ssl.CERT_NONE,
-)
+# Для облачного redis
+# redis_client = redis.from_url(
+#     REDIS_HOST,
+#     ssl_cert_reqs=ssl.CERT_NONE,
+# )
+
+redis_client = redis.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
 name_channel = "list_id_vacancy"
 name_channel_duble = "duble_vacancy"
 
@@ -128,7 +131,7 @@ async def main():
 
         page = await context.new_page()
 
-        while page_num < 3:
+        while page_num < 1:
             url = URL + f"&page={page_num}&order_by=publication_time"
             content = await get_hh_page(page, url)
             if not content:
