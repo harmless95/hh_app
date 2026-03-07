@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import BIGINT, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from core.base import Base
+from core.model import Base
 
 
 class VacancyData(Base):

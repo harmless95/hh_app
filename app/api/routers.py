@@ -3,11 +3,9 @@ from fastapi import APIRouter, Depends, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
-from api.crud import data_save_db
-from core.helper_db import help_session
-from core.schema_vacancy import Vacancy
-
-from api.crud import get_tg
+from api.crud import data_save_db, get_tg
+from core.model import help_session, Vacancy
+from core.config import logger
 
 router = APIRouter(prefix="/v1/data", tags=["Vacancy"])
 logger = logging.getLogger("FastAPI")
