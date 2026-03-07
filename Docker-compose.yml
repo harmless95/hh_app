@@ -15,60 +15,73 @@ services:
 
   app_tg:
     build:
-      dockerfile: project_tg/Dockerfile
+      dockerfile: Dockerfile
       context: project_tg
     container_name: app_tg
     restart: always
     ports:
       - "4444:4444"
     env_file:
-      - project_tg/.env
+      - ./project_tg/.env
     depends_on:
       - db_hh
     networks:
       - hh_network
 
-  pars_app:
-    build:
-      dockerfile: project_parsing/Dockerfile
-      context: project_parsing
-    container_name: parse_app
-#    restart: always
-    env_file:
-      - project_parsing/.env
-    depends_on:
-      - db_hh
-      - redis
-      - app_tg
-      - fastapi_app
-    networks:
-      - hh_network
-
-  handler_api:
-    build:
-      dockerfile: handler_api/Dockerfile
-      context: handler_api
-    container_name: handler_api
-    #    restart: always
+#  pars_app:
+#    build:
+#      dockerfile: Dockerfile
+#      context: project_parsing
+#    container_name: parse_app
+##    restart: always
 #    env_file:
-#      - project_parsing/.env
-    depends_on:
-      - db_hh
-      - app_tg
-      - fastapi_app
-    networks:
-      - hh_network
+#      - .env
+##    depends_on:
+##      - db_hh
+##      - redis
+##      - app_tg
+##      - fastapi_app
+#    networks:
+#      - hh_network
+#
+#  handler_api:
+#    build:
+#      dockerfile: Dockerfile
+#      context: handler_api
+#    container_name: handler_api
+#    #    restart: always
+##    env_file:
+##      - project_parsing/.env
+#    depends_on:
+#      - db_hh
+#      - app_tg
+#      - fastapi_app
+#    networks:
+#      - hh_network
 
   fastapi_app:
     build:
-      dockerfile: app/Dockerfile
+      dockerfile: Dockerfile
       context: app
     container_name: fastapi_app
     restart: always
     env_file:
-      - app/.env
+      - .env
     ports:
       - "8000:8000"
+    depends_on:
+      - db_hh
+      - redis
+    networks:
+      - hh_network
+
+  worker:
+    build:
+      dockerfile: Dockerfile
+      context: app
+    entrypoint: taskiq worker api.Dependencies.queue_data:broker
+    env_file:
+      - .env
     depends_on:
       - db_hh
       - redis
