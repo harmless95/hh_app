@@ -2,16 +2,14 @@ from typing import List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
-from core.model.schema_vacancy import Vacancy
-from core.model.schema_tg import VacancyTG
-from core.model.vacancy_data import VacancyData
+from core.model import Vacancy, VacancyData
 
 
 async def data_save_db(session: AsyncSession, data: List[Vacancy]):
     id_data_st = [st.id_vacancy for st in data]
-    stmt = select(VacancyData).where(VacancyData.id_vacancy.in_(id_data_st))
+    stmt = select(VacancyData.id_vacancy).where(VacancyData.id_vacancy.in_(id_data_st))
     result = await session.execute(stmt)
     vac = set(result.scalars().all())
 
@@ -39,13 +37,3 @@ async def data_save_db(session: AsyncSession, data: List[Vacancy]):
         await session.rollback()
         raise HTTPException(status_code=500, detail="Ошибка при сохранении в БД")
     return "Completed"
-
-
-async def get_tg(
-    session: AsyncSession,
-    data_tg: str,
-):
-    stmt = select(VacancyData).where(VacancyData.skills.any(data_tg.lower()))
-    result = await session.execute(stmt)
-    list_vac = result.scalars().all()
-    return [VacancyTG.model_validate(item) for item in list_vac]

@@ -1,10 +1,12 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, Body
 from sqlalchemy.ext.asyncio import AsyncSession
-import logging
 
 from api.crud import data_save_db, get_tg
 from core.model import help_session, Vacancy
+from api.Dependencies.crud import data_save_db
+from api.Dependencies.queue_data import create_tasks
+from core.model import help_session, Vacancy, DataTG
 from core.config import logger
 
 router = APIRouter(prefix="/v1/data", tags=["Vacancy"])
@@ -25,13 +27,10 @@ async def save_data(
 
 @router.post("/tg/")
 async def get_vacancy(
-    session: Annotated[AsyncSession, Depends(help_session.get_session)],
-    data_tg: str = Body(),
+    data_tg: DataTG = Body(),
 ):
-    logger.warning("FsT: %s", data_tg)
-    list_vacancy = await get_tg(
-        session=session,
-        data_tg=data_tg,
-    )
-    logger.warning("FsT res: %s", list_vacancy)
-    return list_vacancy
+    logger.info("Data obtained from TG.: %s", data_tg)
+    await create_tasks.kiq(data_tg)
+    return {
+        "status": "Обработка данных",
+    }
