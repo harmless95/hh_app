@@ -4,18 +4,17 @@ from taskiq import TaskiqDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from api.Dependencies.redis_conn import REDIS_HOST, redis_client
+from api.Dependencies.redis_conn import REDIS_HOST, redis_client, redis_channel
 from core.config import logger
 from core.model import help_session, VacancyData, VacancyTG, DataTG
 
-redis_channel = "tasks_vacancy"
 broker = taskiq_redis.ListQueueBroker(f"redis://{REDIS_HOST}:6379/0")
 
 
 @broker.task
 async def create_tasks(
     body: DataTG,
-    session: AsyncSession = TaskiqDepends(help_session.session_getter),
+    session: AsyncSession = TaskiqDepends(help_session.get_session),
 ):
     try:
         data_tg = body.text

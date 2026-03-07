@@ -1,8 +1,7 @@
 import redis.asyncio as redis
+import os
 
-from core.config import setting
-
-REDIS_HOST = setting.redis.host
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 redis_channel = "tasks_vacancy"
 
 redis_client = redis.Redis(
