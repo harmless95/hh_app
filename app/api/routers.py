@@ -1,5 +1,5 @@
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.Dependencies.crud import data_save_db
@@ -27,7 +27,7 @@ async def save_data(
 
 @router.post("/tg/")
 async def get_vacancy(
-    data_tg: DataTG = Body(),
+    data_tg: DataTG,
 ):
     logger.info("Data obtained from TG.: %s", data_tg)
     await create_tasks.kiq(data_tg)

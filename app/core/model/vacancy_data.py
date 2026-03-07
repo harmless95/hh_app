@@ -1,7 +1,7 @@
-# from datetime import datetime, timezone
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import BIGINT, String, Text
+from sqlalchemy import BIGINT, String, Text, TIMESTAMP
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from core.model import Base
@@ -16,8 +16,8 @@ class VacancyData(Base):
     name_company: Mapped[str] = mapped_column(String(255), nullable=True)
     link: Mapped[str] = mapped_column(Text, nullable=False)
     skills: Mapped[list[str]] = mapped_column(ARRAY(String))
-    # created_at: Mapped[datetime] = mapped_column(
-    #     TIMESTAMP(timezone=True),
-    #     default=lambda: datetime.now(timezone.utc),
-    #     nullable=False,
-    # )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
