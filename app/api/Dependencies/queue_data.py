@@ -4,17 +4,11 @@ from taskiq import TaskiqDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from api.Dependencies.redis_conn import (
-    REDIS_HOST,
-    REDIS_PASSWORD,
-    redis_client,
-    redis_channel,
-)
+from api.Dependencies.redis_conn import redis_client, redis_channel, FULL_REDIS_URL
 from core.config import logger
 from core.model import help_session, VacancyData, VacancyTG, DataTG
 
-REDIS_URL = f"rediss://default:{REDIS_PASSWORD}@{REDIS_HOST}:6379/0"
-broker = taskiq_redis.ListQueueBroker(REDIS_URL)
+broker = taskiq_redis.ListQueueBroker(FULL_REDIS_URL)
 
 
 @broker.task
