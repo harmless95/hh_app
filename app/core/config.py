@@ -14,6 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Redis(BaseModel):
     host: str
+    password: str
 
 
 class PostgresDB(BaseModel):
