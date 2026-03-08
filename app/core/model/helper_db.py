@@ -43,4 +43,5 @@ help_session = HelperDB(
     echo_pool=setting.db.echo_pool,
     pool_size=setting.db.pool_size,
     max_overflow=setting.db.max_overflow,
+    pool_pre_ping=setting.db.pool_pre_ping,
 )
