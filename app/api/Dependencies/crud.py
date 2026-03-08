@@ -35,5 +35,8 @@ async def data_save_db(session: AsyncSession, data: List[Vacancy]):
         await session.commit()
     except Exception as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail="Ошибка при сохранении в БД")
+        print(f"DATABASE ERROR: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Ошибка при сохранении в БД: {str(e)}"
+        )
     return "Completed"

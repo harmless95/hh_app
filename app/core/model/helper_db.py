@@ -5,6 +5,7 @@ from core.config import setting
 
 
 class HelperDB:
+
     def __init__(
         self,
         url: str,
@@ -12,6 +13,7 @@ class HelperDB:
         echo_pool: bool,
         pool_size: int,
         max_overflow: int,
+        pool_pre_ping: bool,
     ):
         self.engine = create_async_engine(
             url=url,
@@ -19,6 +21,7 @@ class HelperDB:
             echo_pool=echo_pool,
             pool_size=pool_size,
             max_overflow=max_overflow,
+            pool_pre_ping=pool_pre_ping,
         )
         self.sessionmaker = async_sessionmaker(
             bind=self.engine,
