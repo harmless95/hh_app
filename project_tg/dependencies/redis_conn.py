@@ -2,13 +2,17 @@ import redis.asyncio as redis
 import ssl
 import os
 
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PASSWORD = os.getenv("REDIS__PASSWORD")
+FULL_REDIS_URL = os.getenv("REDIS__URL")
 redis_channel = "tasks_vacancy"
-FULL_REDIS_URL = f"rediss://default:{REDIS_PASSWORD}@{REDIS_HOST}:6379/0"
+
+redis_kwargs = {
+    "decode_responses": True,
+}
+
+if FULL_REDIS_URL.startswith("rediss"):
+    redis_kwargs.update({"ssl_cert_reqs": ssl.CERT_NONE})
 
 redis_client = redis.from_url(
     FULL_REDIS_URL,
-    ssl_cert_reqs=ssl.CERT_NONE,
-    decode_responses=True,
+    **redis_kwargs,
 )
