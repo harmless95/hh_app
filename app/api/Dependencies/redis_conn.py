@@ -3,7 +3,7 @@ import ssl
 
 from core.config import setting
 
-redis_channel = "tasks_vacancy"
+redis_channel = setting.redis.channel
 FULL_REDIS_URL = setting.redis.url
 
 redis_kwargs = {

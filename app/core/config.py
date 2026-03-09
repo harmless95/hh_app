@@ -14,6 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Redis(BaseModel):
     url: str
+    channel: str
 
 
 class PostgresDB(BaseModel):

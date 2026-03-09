@@ -1,9 +1,10 @@
 import redis.asyncio as redis
 import ssl
-import os
 
-FULL_REDIS_URL = str(os.getenv("REDIS__URL"))
-redis_channel = "tasks_vacancy"
+from core.config import setting
+
+FULL_REDIS_URL = setting.redis.url
+redis_channel = setting.redis.channel
 
 redis_kwargs = {
     "decode_responses": True,
