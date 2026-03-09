@@ -8,5 +8,5 @@ class ChatInfo(BaseModel):
 
 class DataTG(BaseModel):
     chat: ChatInfo
-    text: str
+    text: list
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
