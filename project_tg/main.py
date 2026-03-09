@@ -1,28 +1,25 @@
 import asyncio
 import os
-import logging
-import httpx
 import uvicorn
-import json
 
-from aiogram import Bot, Dispatcher, html, F
+from aiogram import Bot, Dispatcher
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
 from fastapi import FastAPI
 
-from dependencies.redis_conn import redis_client, redis_channel
+from handler_tg.handler_vacancy.redis import get_redis
+from handler_tg.router_inline_keyboard import router
+from core.config import setting, logger
 
-TG_TOKEN = os.getenv("TG_TOKEN")
-url_app = os.getenv("URL_APP", "http://fastapi_app:8000/v1/data/")
-TG_PORT = os.getenv("TG_PORT", 8000)
+TG_TOKEN = setting.config_tg.token
+TG_PORT = setting.config_tg.port
 
-
-logger = logging.getLogger("TG_app")
 
 bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
+dp.include_router(router=router)
 app_health = FastAPI()
 
 
@@ -33,68 +30,8 @@ def health():
 
 def run_health_server():
     # Render передает порт в переменной PORT
-    port = int(os.getenv("PORT", 8000))
+    port = int(TG_PORT)
     uvicorn.run(app_health, host="0.0.0.0", port=port)
-
-
-async def get_redis(bot: Bot):
-    pubsub = redis_client.pubsub()
-    await pubsub.subscribe(redis_channel)
-    logger.info(f"Subscribed to {redis_channel}")
-
-    try:
-        async for message in pubsub.listen():
-            logger.info(f"Raw message from Redis: {message}")
-            if message["type"] == "message":
-
-                data_app = json.loads(message["data"])
-                chat_id = data_app.get("chat_id")
-                vacancies = data_app.get("data")
-                logger.info("Result app: %s", data_app)
-                if not chat_id:
-                    continue
-                if isinstance(vacancies, list):
-                    for item in vacancies[:10]:
-                        text_vac = (
-                            f"🔹 <b>{item.get('name_vacancy', 'Без названия')}</b>\n"
-                            f"🏢 Компания: {item.get('name_company', 'Не указана')}\n"
-                            f"🔗 <a href='{item.get('link', '#')}'>Перейти к вакансии</a>"
-                        )
-                        await bot.send_message(
-                            chat_id=chat_id,
-                            text=text_vac,
-                            parse_mode="HTML",
-                        )
-                        await asyncio.sleep(0.5)
-                else:
-                    await bot.send_message(chat_id=chat_id, text=str(vacancies))
-
-    except Exception as e:
-        logger.error(f"Ошибка Redis: {e}")
-    finally:
-        await pubsub.unsubscribe(redis_channel)
-    await asyncio.sleep(0.1)
-
-
-async def handler_message(message: Message):
-
-    data_json = message.model_dump()
-    logger.error("Data TG: %s, %s", type(data_json), data_json)
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(url=url_app, json=data_json)
-            logger.error("Resp: %s", response)
-            if response.status_code == 200:
-                return "Сообщение обработанно"
-
-            logger.warning("API Error %s: %s", response.status_code, response.text)
-            return "Не удалось обработать данные"
-
-    except httpx.ReadTimeout:
-        return "Сервер слишком долго думал, но мы продолжаем обработку"
-    except Exception as ex:
-        logger.exception("Webhook sending failed")
-        return "Ошибка связи с сервером"
 
 
 @dp.message(CommandStart())
@@ -114,11 +51,11 @@ async def command_stop(
     await message.answer("Все процессы остановились")
 
 
-@dp.message(F.text)
-async def command_text(message: Message):
-    await message.answer(f"Ищу вакансии по навыку: {message.text}...")
-    result_app = await handler_message(message=message)
-    await message.answer(result_app)
+# @dp.message(F.text)
+# async def command_text(message: Message):
+#     await message.answer(f"Ищу вакансии по навыку: {message.text}...")
+#     result_app = await handler_message(message=message)
+#     await message.answer(result_app)
 
 
 async def run_bot():
