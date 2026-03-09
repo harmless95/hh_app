@@ -2,7 +2,7 @@ import redis.asyncio as redis
 import ssl
 import os
 
-FULL_REDIS_URL = os.getenv("REDIS__URL")
+FULL_REDIS_URL = str(os.getenv("REDIS__URL"))
 redis_channel = "tasks_vacancy"
 
 redis_kwargs = {
