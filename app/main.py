@@ -15,11 +15,11 @@ app = FastAPI()
 app.include_router(router=router)
 
 
-@app.get("/")
-async def get_hello():
+@app.api_route("/", methods=["GET", "HEAD"])
+async def get_check():
     logger.info("Check app")
     return {
-        "message": "Hello",
+        "status": "bot is running",
     }
 
 
