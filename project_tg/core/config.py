@@ -12,6 +12,10 @@ LOG_DEFAULT_FORMAT = "[%(asctime)s.%(msecs)03d] %(module)10s:%(lineno)-3d %(leve
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+class PingAPP(BaseModel):
+    url: str
+
+
 class ApplicationDB(BaseModel):
     url: str
 
@@ -51,6 +55,7 @@ class Settings(BaseSettings):
     redis: Redis
     app_db: ApplicationDB
     config_tg: ConfigTG
+    ping_app: PingAPP
     my_logger: LoggingConfig = LoggingConfig()
 
 
