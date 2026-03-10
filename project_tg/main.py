@@ -52,6 +52,7 @@ async def command_stop(
 async def run_bot():
     redis_tasks = asyncio.create_task(get_redis(bot))
     try:
+        await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:
         redis_tasks.cancel()
