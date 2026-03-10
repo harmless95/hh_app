@@ -10,7 +10,7 @@ from core.config import logger
 router = APIRouter(prefix="/v1/data", tags=["Vacancy"])
 
 
-@router.get("/check/")
+@router.api_route("/check/", methods=["GET", "HEAD"])
 async def health():
     return {"status": "bot is running"}
 

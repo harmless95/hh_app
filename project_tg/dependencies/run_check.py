@@ -6,6 +6,6 @@ TG_PORT = setting.config_tg.port
 router = APIRouter()
 
 
-@router.get("/check/")
+@router.api_route("/check/", methods=["GET", "HEAD"])
 async def health():
     return {"status": "bot is running"}

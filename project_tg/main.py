@@ -61,10 +61,14 @@ async def main():
     config = uvicorn.Config(
         app_health,
         host="0.0.0.0",
-        port=int(TG_PORT),
+        port=int(TG_PORT or 10000),
     )
     server = uvicorn.Server(config)
-    await asyncio.gather(server.serve(), run_bot(), ping_server())
+    await asyncio.gather(
+        server.serve(),
+        run_bot(),
+        ping_server(),
+    )
 
 
 if __name__ == "__main__":
