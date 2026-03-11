@@ -12,6 +12,7 @@ from dependencies.ping_server import ping_server
 from dependencies.run_check import router as router_ping
 from handler_tg.handler_vacancy.redis import get_redis
 from handler_tg.router_inline_keyboard import router
+from handler_tg.handler_keyboard.keyboard_reply import router_reply
 from core.config import setting
 
 TG_TOKEN = setting.config_tg.token
@@ -21,6 +22,7 @@ TG_PORT = setting.config_tg.port
 bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
 dp.include_router(router=router)
+dp.include_router(router=router_reply)
 app_health = FastAPI()
 app_health.include_router(router=router_ping)
 
