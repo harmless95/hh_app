@@ -1,0 +1,11 @@
+name: My First CI
+on: push
+jobs:
+  our-first-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run hello Action
+        run: "Start Hello Action"
+
+      - name: Check version python
+        run: python --version
