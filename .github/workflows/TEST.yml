@@ -1,9 +1,28 @@
 name: My First CI
-on: push
+on:
+  push:
+    paths:
+      - "app/**"
+
 jobs:
   our-first-job:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Check Dockerfile
+        run: |
+          echo "Проверяем на наличие Dockerfile"
+          ls -la app/
+          if [-f "app/Dockerfile"]; then
+            echo "Dockerfile найден"
+          else
+            echo "Dockerfile не найден"
+            exit 1
+          fi
+
+
       - name: Run hello Action
         run: echo "Start Hello Action"
 
