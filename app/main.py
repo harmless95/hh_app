@@ -9,7 +9,7 @@ from api.Dependencies.ping_server import ping_server
 from core.config import logger
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-
+#check
 
 app = FastAPI()
 app.include_router(router=router)
