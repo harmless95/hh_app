@@ -11,6 +11,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
+      - name: Run hello Action
+        run: echo "Start Hello Action"
+
       - name: Check Dockerfile
         run: |
           echo "Проверяем на наличие Dockerfile"
@@ -22,9 +25,23 @@ jobs:
             exit 1
           fi
 
-
-      - name: Run hello Action
-        run: echo "Start Hello Action"
-
       - name: Check version python
         run: python --version
+
+      - name: Docker image
+        run: |
+          echo "Сборка Dockerfile"
+          docker build -t my-app:hh-app -f app/Dockerfile app/
+
+      - name: Docker run
+        run: |
+          docker run -d --name app-container my-app:hh-app
+          sleep 5
+          if [ "$(docker inspect -f '{{.State.Running}}' app-container)" == "true" ]; then
+            echo "Контейнер запущен"
+            docker stop app-container
+          else
+            echo "Контейнер упал"
+            docker log app-container
+            exit 1
+          fi
