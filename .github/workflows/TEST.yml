@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run hello Action
-        run: "Start Hello Action"
+        run: echo "Start Hello Action"
 
       - name: Check version python
         run: python --version
