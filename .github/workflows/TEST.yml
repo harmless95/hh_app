@@ -15,7 +15,7 @@ jobs:
         run: |
           echo "Проверяем на наличие Dockerfile"
           ls -la app/
-          if [-f "app/Dockerfile"]; then
+          if [ -f "app/Dockerfile" ]; then
             echo "Dockerfile найден"
           else
             echo "Dockerfile не найден"
