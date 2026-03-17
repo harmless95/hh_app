@@ -35,7 +35,7 @@ jobs:
 
       - name: Docker run
         run: |
-          docker run -d --name app-container my-app:hh-app
+          docker run -d -e PORT=8000 --name app-container my-app:hh-app
           sleep 5
           if [ "$(docker inspect -f '{{.State.Running}}' app-container)" == "true" ]; then
             echo "Контейнер запущен"
