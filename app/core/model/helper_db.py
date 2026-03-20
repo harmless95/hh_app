@@ -1,4 +1,5 @@
 from typing import AsyncGenerator
+from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from core.config import setting
@@ -33,6 +34,11 @@ class HelperDB:
         await self.engine.dispose()
 
     async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
+        async with self.sessionmaker() as session:
+            yield session
+
+    @asynccontextmanager
+    async def get_session_context(self) -> AsyncGenerator[AsyncSession, None]:
         async with self.sessionmaker() as session:
             yield session
 
