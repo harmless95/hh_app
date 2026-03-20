@@ -4,9 +4,9 @@ import os
 import uvicorn
 from fastapi import FastAPI
 
-from api.routers import router
-from api.Dependencies.ping_server import ping_server
-from core.config import logger
+from app.api.routers import router
+from app.api.Dependencies.ping_server import ping_server
+from app.core.config import logger
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 # check
