@@ -1,7 +1,7 @@
 import asyncio
 import httpx
 
-from app.core.config import setting, logger
+from core.config import setting, logger
 
 PING_HOST = setting.ping_app.url
 

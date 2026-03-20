@@ -3,7 +3,7 @@ import pytest_asyncio
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
-from app.main import app
+from main import app
 from core.model import help_session, VacancyData
 
 client = TestClient(app=app)

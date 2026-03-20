@@ -2,7 +2,7 @@ from typing import AsyncGenerator
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from app.core.config import setting
+from core.config import setting
 
 
 class HelperDB:
