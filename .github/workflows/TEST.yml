@@ -58,4 +58,4 @@ jobs:
 
       - name: Testing app service
         run: |
-          python -m pytest app/test
+          python -m pytest app/tests
