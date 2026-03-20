@@ -36,7 +36,7 @@ jobs:
       - name: Docker image
         run: |
           echo "Сборка Dockerfile"
-          docker build -t my-app:hh-app -f app/Dockerfile app/
+          docker build -t my-app:hh-app -f app/Dockerfile .
 
       - name: Docker run
         run: |
@@ -47,7 +47,7 @@ jobs:
             docker stop app-container
           else
             echo "Контейнер упал"
-            docker log app-container
+            docker logs app-container
             exit 1
           fi
 
