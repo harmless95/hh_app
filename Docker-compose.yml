@@ -77,18 +77,18 @@ services:
     networks:
       - hh_network
 
-#  worker:
-#    build:
-#      dockerfile: Dockerfile
-#      context: app
-#    entrypoint: taskiq worker api.Dependencies.queue_data:broker
-#    env_file:
-#      - .env
-#    depends_on:
-#      - db_hh
-#      - redis
-#    networks:
-#      - hh_network
+  worker:
+    build:
+      dockerfile: Dockerfile
+      context: app
+    entrypoint: taskiq worker api.Dependencies.queue_data:broker
+    env_file:
+      - .env
+    depends_on:
+      - db_hh
+      - redis
+    networks:
+      - hh_network
 
   redis:
     image: redis:latest

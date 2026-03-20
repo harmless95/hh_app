@@ -1,7 +1,7 @@
 import redis.asyncio as redis
 import ssl
 
-from core.config import setting
+from app.core.config import setting
 
 redis_channel = setting.redis.channel
 FULL_REDIS_URL = setting.redis.url

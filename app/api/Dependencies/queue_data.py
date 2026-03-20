@@ -4,9 +4,9 @@ from taskiq import TaskiqDepends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, cast, Text, ARRAY
 
-from api.Dependencies.redis_conn import redis_client, redis_channel, FULL_REDIS_URL
-from core.config import logger
-from core.model import help_session, VacancyData, VacancyTG, DataTG
+from app.api.Dependencies.redis_conn import redis_client, redis_channel, FULL_REDIS_URL
+from app.core.config import logger
+from app.core.model import help_session, VacancyData, VacancyTG, DataTG
 
 broker = taskiq_redis.ListQueueBroker(FULL_REDIS_URL)
 

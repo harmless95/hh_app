@@ -2,10 +2,10 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.Dependencies.crud import data_save_db
-from api.Dependencies.queue_data import create_tasks
-from core.model import help_session, Vacancy, DataTG
-from core.config import logger
+from app.api.Dependencies.crud import data_save_db
+from app.api.Dependencies.queue_data import create_tasks
+from app.core.model import help_session, Vacancy, DataTG
+from app.core.config import logger
 
 router = APIRouter(prefix="/v1/data", tags=["Vacancy"])
 

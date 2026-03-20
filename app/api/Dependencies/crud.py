@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException
 
-from core.model import Vacancy, VacancyData
+from app.core.model import Vacancy, VacancyData
 
 
 async def data_save_db(session: AsyncSession, data: List[Vacancy]):
