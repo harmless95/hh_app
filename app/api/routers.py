@@ -1,5 +1,5 @@
 from typing import Annotated, List
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.Dependencies.crud import data_save_db
@@ -10,7 +10,10 @@ from core.config import logger
 router = APIRouter(prefix="/v1/data", tags=["Vacancy"])
 
 
-@router.post("/")
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+)
 async def save_data(
     session: Annotated[AsyncSession, Depends(help_session.get_session)],
     data_vacancy: List[Vacancy],
