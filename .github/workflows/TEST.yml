@@ -63,5 +63,6 @@ jobs:
           pip install -r app/requirements.txt
 
       - name: Testing app service
+        working-directory: ./app
         run: |
-          python -m pytest app/tests
+          python -m pytest tests
