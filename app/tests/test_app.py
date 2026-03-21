@@ -7,7 +7,7 @@ from sqlalchemy import delete
 
 from main import app
 
-from core.model import help_session, VacancyData, HelperDB
+from core.model import help_session, VacancyData, HelperDB, Base
 
 client = TestClient(app=app)
 pytestmark = pytest.mark.asyncio(scope="session")
@@ -29,6 +29,17 @@ def event_loop():
     loop = policy.new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def setup_db():
+    # Создаем таблицы в пустой базе перед всеми тестами
+    async with test_helper.engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # После всех тестов можно (но не обязательно в CI) удалить таблицы
+    async with test_helper.engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest_asyncio.fixture
