@@ -13,7 +13,7 @@ client = TestClient(app=app)
 pytestmark = pytest.mark.asyncio(scope="session")
 
 test_helper = HelperDB(
-    url="postgresql+asyncpg://user:pass@localhost:5433/test_db",
+    url="postgresql+asyncpg://postgres:postgres@localhost:5433/test_db",
     echo=False,
     echo_pool=False,
     pool_size=5,
