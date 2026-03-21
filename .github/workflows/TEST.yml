@@ -40,7 +40,13 @@ jobs:
 
       - name: Docker run
         run: |
-          docker run -d -e PORT=8000 --name app-container my-app:hh-app
+          docker run -d \
+          -e PORT=8000 \
+          -e APP_CONFIG__REDIS__URL=${{ secrets.APP_CONFIG__REDIS__URL }} \
+          -e APP_CONFIG__REDIS__CHANNEL=${{ secrets.APP_CONFIG__REDIS__CHANNEL }} \
+          -e APP_CONFIG__DB__URL=${{ secrets.APP_CONFIG__DB__URL }} \
+          -e APP_CONFIG__PING_APP__URL=${{ secrets.APP_CONFIG__PING_APP__URL }} \
+          --name app-container my-app:hh-app
           sleep 5
           if [ "$(docker inspect -f '{{.State.Running}}' app-container)" == "true" ]; then
             echo "Контейнер запущен"
