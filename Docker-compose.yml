@@ -13,6 +13,20 @@ services:
     networks:
       - hh_network
 
+  test_db:
+    image: postgres:latest
+    container_name: test_db
+    restart: always
+    env_file:
+      - .env.tests
+    volumes:
+      - test_postgres_data:/var/lib/postgresql
+      - ./init_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - hh_network
+
   app_tg:
     build:
       dockerfile: Dockerfile
@@ -104,3 +118,4 @@ networks:
 
 volumes:
   postgres_data:
+  test_postgres_data:
