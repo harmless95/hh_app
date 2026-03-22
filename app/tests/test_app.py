@@ -1,82 +1,10 @@
 import pytest
-import asyncio
-import pytest_asyncio
-from fastapi.testclient import TestClient
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy import delete
+from sqlalchemy import select
+from core.model import VacancyData
 
-from main import app
+from tests.test_db import ac, db_session, override_db, setup_db
 
-from core.model import help_session, VacancyData, HelperDB, Base
-
-client = TestClient(app=app)
 pytestmark = pytest.mark.asyncio(scope="session")
-
-test_helper = HelperDB(
-    url="postgresql+asyncpg://postgres:postgres@localhost:5433/test_db",
-    echo=False,
-    echo_pool=False,
-    pool_size=5,
-    max_overflow=10,
-    pool_pre_ping=True,
-)
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """Создает экземпляр event loop один раз на всю сессию тестов."""
-    policy = asyncio.get_event_loop_policy()
-    loop = policy.new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(scope="session", autouse=True)
-async def setup_db():
-    # Создаем таблицы в пустой базе перед всеми тестами
-    async with test_helper.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    # После всех тестов можно (но не обязательно в CI) удалить таблицы
-    async with test_helper.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
-
-@pytest_asyncio.fixture
-async def db_session():
-    """Фикстура для получения сессии в самих тестах"""
-    async with test_helper.get_session_context() as session:
-        yield session
-        await session.execute(delete(VacancyData).where(VacancyData.id_vacancy == 777))
-        await session.commit()
-
-
-@pytest_asyncio.fixture(autouse=True)
-async def override_db():
-    """Автоматически подменяет БД во всем приложении на время тестов"""
-    # Если в роутах используется help_session.get_session
-    app.dependency_overrides[help_session.get_session] = test_helper.get_session
-    yield
-    app.dependency_overrides.pop(help_session.get_session, None)
-
-
-@pytest_asyncio.fixture
-async def ac():
-    """Асинхронный клиент для запросов"""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
-        yield client
-
-
-@pytest_asyncio.fixture(autouse=True)
-async def clean_db():
-    # Перед каждым тестом очищаем таблицы
-    async with test_helper.get_session_context() as session:
-        # пример: очистка таблицы
-        await session.execute(delete(VacancyData))
-        await session.commit()
-    yield
 
 
 async def test_connect(ac):
@@ -104,8 +32,6 @@ async def test_save_db(ac, db_session):
     assert response.json() == "Completed"
 
     # 2. ПРОВЕРКА: идем в БД через тестовую сессию и смотрим, что запись реально появилась
-    from sqlalchemy import select
-    from core.model import VacancyData
 
     result = await db_session.execute(
         select(VacancyData).where(VacancyData.id_vacancy == 777)
