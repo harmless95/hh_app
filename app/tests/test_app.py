@@ -4,8 +4,9 @@ from sqlalchemy import select
 from unittest.mock import AsyncMock
 
 from core.model import VacancyData
-from tests.test_db import ac, db_session, override_db, setup_db
-import api.routers as routers_module
+from tests.fixture_db import ac, db_session, override_db, setup_db
+from tests.fixture_taskiq import patch_taskiq
+
 from api.Dependencies.queue_data import create_tasks
 
 pytestmark = pytest.mark.asyncio(scope="session")
@@ -45,7 +46,7 @@ async def test_save_db(ac, db_session):
     assert vacancy.name_vacancy == "test_name"
 
 
-async def test_get_vacancy(ac, db_session, mocker):
+async def test_get_vacancy(ac, db_session, mocker, patch_taskiq):
     # Подменяем публикацию в редис на AsyncMock
     #  Патчу redis_client именно в том модуле, где он используется
     mock_publish = mocker.patch(
@@ -53,14 +54,7 @@ async def test_get_vacancy(ac, db_session, mocker):
         new_callable=AsyncMock,
     )
 
-    async def mock_kiq_logic(body, **_):
-        return await create_tasks(body, session=db_session)
-
-    mocker.patch.object(
-        routers_module.create_tasks,
-        "kiq",
-        side_effect=mock_kiq_logic,
-    )
+    patch_taskiq(create_tasks)
 
     data_tg = {
         "chat": {"id": 111},
