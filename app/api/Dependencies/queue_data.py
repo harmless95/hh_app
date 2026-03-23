@@ -2,7 +2,7 @@ import json
 import taskiq_redis
 from taskiq import TaskiqDepends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, cast, Text, ARRAY
+from sqlalchemy import select, cast, String, ARRAY
 
 from api.Dependencies.redis_conn import redis_client, redis_channel, FULL_REDIS_URL
 from core.config import logger
@@ -23,7 +23,7 @@ async def create_tasks(
         if isinstance(data_tg, list):
             search_skills = [skill.lower() for skill in data_tg]
             stmt = select(VacancyData).where(
-                VacancyData.skills.contains(cast(search_skills, ARRAY(Text)))
+                VacancyData.skills.contains(cast(search_skills, ARRAY(String)))
             )
         else:
             stmt = select(VacancyData).where(VacancyData.skills.any(data_tg.lower()))

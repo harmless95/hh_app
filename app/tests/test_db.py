@@ -79,11 +79,14 @@ async def db_session():
 async def override_db(db_session):
     """Автоматически подменяет БД во всем приложении на время тестов"""
 
+    async def _get_test_session():
+        yield db_session
+
     # Это механизм FastAPI для подмены зависимостей (Dependency Injection)
     # Мы говорим приложению:
     #   «Когда в каком-либо роуте (эндпоинте) встретишь вызов help_session.get_session, не запускай его.
-    #   Вместо этого запусти test_helper.get_session»
-    app.dependency_overrides[help_session.get_session] = test_helper.get_session
+    #   Вместо этого запусти _get_test_session»
+    app.dependency_overrides[help_session.get_session] = _get_test_session
 
     # Запускается сам тест
     yield
