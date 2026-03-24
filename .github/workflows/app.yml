@@ -1,11 +1,11 @@
-name: My First CI
+name: My FastAPI app
 on:
   push:
     paths:
       - "app/**"
 
 jobs:
-  our-first-job:
+  our-DockerAPP-job:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -16,8 +16,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run hello Action
-        run: echo "Start Hello Action"
+      - name: Check version python
+        run: python --version
 
       - name: Check Dockerfile
         run: |
@@ -29,9 +29,6 @@ jobs:
             echo "Dockerfile не найден"
             exit 1
           fi
-
-      - name: Check version python
-        run: python --version
 
       - name: Docker image
         run: |
