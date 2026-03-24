@@ -1,8 +1,8 @@
 name: My FastAPI app
-on:
-  push:
-    paths:
-      - "app/**"
+on: push
+#  push:
+#    paths:
+#      - "app/**"
 
 jobs:
   our-DockerAPP-job:
