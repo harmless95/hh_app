@@ -3,7 +3,7 @@ import httpx
 
 from core.config import setting, logger
 
-PING_HOST = setting.ping_app.url
+PING_HOST = setting.ping_app_tg.url
 
 
 async def ping_server():
