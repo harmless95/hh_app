@@ -1,8 +1,8 @@
 name: My First CI
-on: push
-#  push:
-#    paths:
-#      - "app/**"
+on:
+  push:
+    paths:
+      - "app/**"
 
 jobs:
   our-first-job:
