@@ -44,13 +44,6 @@ async def command_stop(
     await message.answer("Все процессы остановились")
 
 
-# @dp.message(F.text)
-# async def command_text(message: Message):
-#     await message.answer(f"Ищу вакансии по навыку: {message.text}...")
-#     result_app = await handler_message(message=message)
-#     await message.answer(result_app)
-
-
 async def run_bot():
     redis_tasks = asyncio.create_task(get_redis(bot))
     try:
