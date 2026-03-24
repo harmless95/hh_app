@@ -54,7 +54,7 @@ jobs:
             exit 1
           fi
   test:
-    needs: [our-first-job]
+    needs: [our-DockerAPP-job]
     runs-on: ubuntu-latest
     services:
       postgres:
