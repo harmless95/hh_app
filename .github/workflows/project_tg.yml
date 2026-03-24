@@ -1,0 +1,79 @@
+name: My ProjectTG
+on:
+  push:
+    paths:
+      - "project_tg/**"
+
+jobs:
+  our-DockerTG-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Check version python
+        run: python --version
+
+      - name: Check Dockerfile
+        run: |
+          echo "Проверяем на наличие Dockerfile"
+          ls -la project_tg/
+          if [ -f "project_tg/Dockerfile" ]; then
+            echo "Dockerfile найден"
+          else
+            echo "Dockerfile не найден"
+            exit 1
+          fi
+
+      - name: Docker image
+        run: |
+          echo "Сборка Dockerfile"
+          docker build -t my-tg-app:hh-app -f project_tg/Dockerfile .
+
+      - name: Docker run
+        run: |
+          docker run -d \
+          -e APP_CONFIG__CONFIG_TG__TOKEN=${{ secrets.APP_CONFIG__CONFIG_TG__TOKEN }} \
+          -e APP_CONFIG__CONFIG_TG__PORT=${{ secrets.APP_CONFIG__CONFIG_TG__PORT }} \
+          -e APP_CONFIG__REDIS__URL=${{ secrets.APP_CONFIG__REDIS__URL }} \
+          -e APP_CONFIG__REDIS__CHANNEL=${{ secrets.APP_CONFIG__REDIS__CHANNEL }} \
+          -e APP_CONFIG__APP_DB__URL=${{ secrets.APP_CONFIG__APP_DB__URL }} \
+          -e APP_CONFIG__PING_APP_TG__URL=${{ secrets.APP_CONFIG__PING_APP_TG__URL }} \               
+          --name tg-container my-tg-app:hh-app
+          sleep 5
+          if [ "$(docker inspect -f '{{.State.Running}}' tg-container)" == "true" ]; then
+            echo "Контейнер запущен"
+            docker stop tg-container
+          else
+            echo "Контейнер упал"
+            docker logs tg-container
+            exit 1
+          fi
+
+  test:
+    needs: [our-DockerTG-job]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r project_tg/requirements.txt
+
+      - name: Testing project_tg service
+        working-directory: ./project_tg
+        run: |
+          python -m pytest tests
+      

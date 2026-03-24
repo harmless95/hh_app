@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     redis: Redis
     app_db: ApplicationDB
     config_tg: ConfigTG
-    ping_app: PingAPP
+    ping_app_tg: PingAPP
     my_logger: LoggingConfig = LoggingConfig()
 
 
