@@ -43,7 +43,7 @@ jobs:
           -e APP_CONFIG__REDIS__URL=${{ secrets.APP_CONFIG__REDIS__URL }} \
           -e APP_CONFIG__REDIS__CHANNEL=${{ secrets.APP_CONFIG__REDIS__CHANNEL }} \
           -e APP_CONFIG__APP_DB__URL=${{ secrets.APP_CONFIG__APP_DB__URL }} \
-          -e APP_CONFIG__PING_APP_TG__URL=${{ secrets.APP_CONFIG__PING_APP_TG__URL }} \               
+          -e APP_CONFIG__PING_APP_TG__URL=${{ secrets.APP_CONFIG__PING_APP_TG__URL }} \
           --name tg-container my-tg-app:hh-app
           sleep 5
           if [ "$(docker inspect -f '{{.State.Running}}' tg-container)" == "true" ]; then
