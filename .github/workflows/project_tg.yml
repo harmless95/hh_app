@@ -1,6 +1,8 @@
 name: My ProjectTG
-on:  push
-
+on: push
+#  push:
+#    paths:
+#      - "project_tg/**"
 
 jobs:
   our-DockerTG-job:
