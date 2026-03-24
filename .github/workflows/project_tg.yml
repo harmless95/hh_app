@@ -74,6 +74,8 @@ jobs:
 
       - name: Testing project_tg service
         working-directory: ./project_tg
+        env:
+          APP_CONFIG__CONFIG_TG__TOKEN: ${{ secrets.APP_CONFIG__CONFIG_TG__TOKEN }}
         run: |
           python -m pytest tests
       
