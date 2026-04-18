@@ -2,7 +2,8 @@ import json
 import taskiq_redis
 from taskiq import TaskiqDepends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, cast, Text, ARRAY
+from sqlalchemy import select, cast, Text
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 
 from api.Dependencies.redis_conn import redis_client, redis_channel, FULL_REDIS_URL
 from core.config import logger
@@ -23,7 +24,7 @@ async def create_tasks(
         if isinstance(data_tg, list):
             search_skills = [skill.lower() for skill in data_tg]
             stmt = select(VacancyData).where(
-                VacancyData.skills.contains(cast(search_skills, ARRAY(Text)))
+                VacancyData.skills.contains(cast(search_skills, PG_ARRAY(Text)))
             )
         else:
             stmt = select(VacancyData).where(VacancyData.skills.any(data_tg.lower()))
@@ -36,7 +37,8 @@ async def create_tasks(
             ]
             logger.info("Data found and sent to redis: %s", len(data_vac))
         else:
-            data_vac = f"Nothing found for your search query: {",".join(data_tg)}"
+            search_terms = ",".join(data_tg) if isinstance(data_tg, list) else data_tg
+            data_vac = f"Nothing found for your search query: {search_terms}"
             logger.info("Nothing found for your search query: %s .", data_tg)
 
         data_dict = {
