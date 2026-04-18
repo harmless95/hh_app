@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /project_tg
 
-COPY ./requirements.txt .
+COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 

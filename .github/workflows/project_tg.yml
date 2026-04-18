@@ -33,7 +33,7 @@ jobs:
       - name: Docker image
         run: |
           echo "Сборка Dockerfile"
-          docker build -t my-tg-app:hh-app -f project_tg/Dockerfile .
+          docker build -t my-tg-app:hh-app -f project_tg/Dockerfile ./project_tg
 
       - name: Docker run
         run: |
