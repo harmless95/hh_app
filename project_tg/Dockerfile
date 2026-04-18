@@ -5,11 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /project_tg
 
-COPY project_tg/requirements.txt .
+COPY ./requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY project_tg/ .
+COPY . .
 
 ENV PYTHONPATH=/project_tg
 ENTRYPOINT ["python", "main.py"]
