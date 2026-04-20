@@ -1,13 +1,10 @@
 import asyncio
 import time
-from uuid import uuid4
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.Dependencies.crud import data_save_db
-from api.Dependencies.queue_data import create_tasks
-from api.Dependencies.health_check import health_checker
+from api.Dependencies import data_save_db, create_tasks, health_checker
 from core.model import help_session, Vacancy, DataTG
 from core.config import logger
 
@@ -88,29 +85,6 @@ async def get_vacancy(
             "code": "SERVICE_UNAVAILABLE",
         }
 
-    # # Случай 2: Воркеры не работают (деградация)
-    # if not system_status["components"]["worker"]["available"]:
-    #     duration_ms = (time.time() - start) * 1000
-    #     queue_size = system_status["components"]["worker"].get("queue_size", 0)
-    #     logger.warning(
-    #         f"No workers available. Queue size: {system_status['components']['worker'].get('queue_size', 0)}",
-    #         extra={
-    #             **log_extra,
-    #             "duration_ms": duration_ms,
-    #             "queue_size": queue_size,
-    #             "workers_count": system_status["components"]["worker"].get(
-    #                 "workers_count", 0
-    #             ),
-    #         },
-    #     )
-    #
-    #     # Вариант А: Отказать в обработке
-    #     return {
-    #         "status": "error",
-    #         "message": "Сервис обработки временно перегружен. Пожалуйста, попробуйте через несколько минут.",
-    #         "details": "Все воркеры заняты или недоступны",
-    #         "code": "WORKERS_UNAVAILABLE",
-    #     }
     try:
         await create_tasks.kiq(data_tg)
         duration_ms = (time.time() - start) * 1000
