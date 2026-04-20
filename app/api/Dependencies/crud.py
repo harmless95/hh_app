@@ -5,6 +5,7 @@ from sqlalchemy import select
 from fastapi import HTTPException
 
 from core.model import Vacancy, VacancyData
+from core.config import logger
 
 
 async def data_save_db(session: AsyncSession, data: List[Vacancy]):
@@ -33,10 +34,11 @@ async def data_save_db(session: AsyncSession, data: List[Vacancy]):
     session.add_all(new_vacancy)
     try:
         await session.commit()
+
+        logger.info(f"Bulk inserted {len(new_vacancies)} vacancies")
+        return {"saved": len(new_vacancies)}
+
     except Exception as e:
         await session.rollback()
-        print(f"DATABASE ERROR: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Ошибка при сохранении в БД: {str(e)}"
-        )
-    return "Completed"
+        logger.error(f"Bulk insert failed", exc_info=True)
+        raise

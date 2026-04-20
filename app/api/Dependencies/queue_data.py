@@ -39,7 +39,9 @@ async def create_tasks(
         else:
             search_terms = ",".join(data_tg) if isinstance(data_tg, list) else data_tg
             data_vac = f"Nothing found for your search query: {search_terms}"
-            logger.info("Nothing found for your search query: %s .", data_tg)
+            logger.info(
+                "Nothing found for your search query: %s .", data_tg, extra=log_extra
+            )
 
         data_dict = {
             "data": data_vac,
@@ -47,6 +49,24 @@ async def create_tasks(
         }
         payload = json.dumps(data_dict, ensure_ascii=False)
         await redis_client.publish(redis_channel, payload)
+            logger.error("Redis ping timeout", extra=log_extra)
+            logger.error(f"Redis connection lost: {e}", extra=log_extra)
+        logger.info(
+            f"Task completed in {duration_ms:.2f}ms",
+            extra={**log_extra, "duration_ms": duration_ms},
+        )
+        logger.error(
+            "Task timeout",
+            exc_info=True,
+            extra={**log_extra, "duration_ms": duration_ms},
+        )
 
     except Exception:
         logger.exception("Error in TaskIQ worker")
+        duration_ms = (time.time() - start_time) * 1000
+        logger.error(
+            "Error in TaskIQ worker",
+            exc_info=True,
+            extra={**log_extra, "duration_ms": duration_ms},
+        )
+

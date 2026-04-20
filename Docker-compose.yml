@@ -82,12 +82,14 @@ services:
     environment:
       - PORT=8000
     env_file:
-      - .env
+      - app/.env
     ports:
       - "8000:8000"
     depends_on:
       - db_hh
-      - redis
+      - redis_hh
+      - worker
+      - clickhouse_log
     networks:
       - hh_network
 
@@ -97,10 +99,11 @@ services:
       context: app
     entrypoint: taskiq worker api.Dependencies.queue_data:broker
     env_file:
-      - .env
+      - app/.env
     depends_on:
       - db_hh
-      - redis
+      - redis_hh
+      - clickhouse_log
     networks:
       - hh_network
 
@@ -112,10 +115,27 @@ services:
     networks:
       - hh_network
 
+  clickhouse_log:
+    image: clickhouse:latest
+    container_name: clickhouse_log
+    environment:
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    volumes:
+      - ./init_db/click_house_init.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - clickhouse_data:/var/lib/clickhouse/
+    networks:
+      - hh_network
+
 networks:
   hh_network:
     driver: bridge
 
 volumes:
   postgres_data:
+  clickhouse_data:
   test_postgres_data:

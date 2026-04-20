@@ -18,14 +18,15 @@ async def save_data(
     session: Annotated[AsyncSession, Depends(help_session.get_session)],
     data_vacancy: List[Vacancy],
 ):
-    logger.info("Save data")
-    result_save = await data_save_db(
-        session=session,
-        data=data_vacancy,
-    )
-    if not result_save:
-        logger.warning("Failed to save data")
-    return result_save
+    logger.info(f"Save data: %s vacancies", len(data_vacancy))
+    requests_id = str(uuid4())
+    try:
+        result_save = await data_save_db(
+            session=session,
+            data=data_vacancy,
+        )
+        logger.info(f"Successfully saved {result_save.get('saved', 0)} new vacancies")
+        return result_save
 
 
 @router.post("/tg/")

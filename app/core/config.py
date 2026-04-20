@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import BaseModel, PostgresDsn
 
-from .log_settings import setup_logger
+from core.log_config.log_settings import setup_logger
 
 # fmt: off
 LOG_DEFAULT_FORMAT = "[%(asctime)s.%(msecs)03d] %(module)10s:%(lineno)-3d %(levelname)-7s - %(message)s"
@@ -45,8 +45,14 @@ class LoggingConfig(BaseModel):
         "WARNING",
         "ERROR",
         "CRITICAL",
-    ] = "WARNING"
+    ] = "INFO"
     log_format: str = LOG_DEFAULT_FORMAT
+    use_clickhouse: bool
+    ch_host: str
+    ch_port: int
+    ch_user: str
+    ch_password: str
+    ch_db: str
     log_file: str = BASE_DIR / "data_logs/error_logs.log"
 
 
@@ -71,4 +77,10 @@ logger = setup_logger(
     log_level=setting.my_logger.log_level,
     log_file=setting.my_logger.log_file,
     log_format=setting.my_logger.log_format,
+    use_clickhouse=setting.my_logger.use_clickhouse,
+    ch_host=setting.my_logger.ch_host,
+    ch_port=setting.my_logger.ch_port,
+    ch_user=setting.my_logger.ch_user,
+    ch_password=setting.my_logger.ch_password,
+    ch_db=setting.my_logger.ch_db,
 )
