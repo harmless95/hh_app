@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import BaseModel, PostgresDsn
@@ -47,12 +47,12 @@ class LoggingConfig(BaseModel):
         "CRITICAL",
     ] = "INFO"
     log_format: str = LOG_DEFAULT_FORMAT
-    use_clickhouse: bool
-    ch_host: str
-    ch_port: int
-    ch_user: str
-    ch_password: str
-    ch_db: str
+    use_clickhouse: bool = False
+    ch_host: Optional[str] = None
+    ch_port: Optional[str] = None
+    ch_user: Optional[str] = None
+    ch_password: Optional[str] = None
+    ch_db: Optional[str] = None
     log_file: str = BASE_DIR / "data_logs/error_logs.log"
 
 
