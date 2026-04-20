@@ -1,8 +1,6 @@
 import logging
 from pathlib import Path
 
-from core.log_config.async_logger import ClickHouseHandler
-
 
 def setup_logger(
     log_level,
@@ -40,6 +38,8 @@ def setup_logger(
     )
 
     if use_clickhouse:
+        from core.log_config.async_logger import ClickHouseHandler
+
         # Используем ClickHouse handler
         ch_handler = ClickHouseHandler(
             host=ch_host,
