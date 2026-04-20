@@ -1,5 +1,4 @@
 import asyncio
-import os
 
 import uvicorn
 from fastapi import FastAPI
@@ -7,9 +6,6 @@ from fastapi import FastAPI
 from api.routers import router
 from api.Dependencies.ping_server import ping_server
 from core.config import logger
-
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-# check
 
 app = FastAPI()
 app.include_router(router=router)
