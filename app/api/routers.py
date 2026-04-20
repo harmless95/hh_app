@@ -1,5 +1,8 @@
+import asyncio
+import time
+from uuid import uuid4
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.Dependencies.crud import data_save_db
@@ -20,7 +23,6 @@ async def save_data(
     data_vacancy: List[Vacancy],
 ):
     logger.info(f"Save data: %s vacancies", len(data_vacancy))
-    requests_id = str(uuid4())
     try:
         result_save = await data_save_db(
             session=session,
@@ -28,6 +30,24 @@ async def save_data(
         )
         logger.info(f"Successfully saved {result_save.get('saved', 0)} new vacancies")
         return result_save
+
+    except HTTPException:
+        # Перевыбрасываем HTTP исключения
+        raise
+
+    except asyncio.TimeoutError:
+        logger.error("Database timeout while saving vacancies", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Database operation timeout",
+        )
+
+    except Exception as ex:
+        logger.error(f"Unexpected error while saving vacancies", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save data: {str(ex)}",
+        )
 
 
 @router.post("/tg/")

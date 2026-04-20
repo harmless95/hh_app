@@ -1,4 +1,7 @@
 import json
+import time
+import asyncio
+
 import taskiq_redis
 from taskiq import TaskiqDepends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,6 +56,12 @@ async def create_tasks(
     body: DataTG,
     session: AsyncSession = TaskiqDepends(help_session.get_session),
 ):
+    start_time = time.time()
+    log_extra = {
+        "user_id": body.user_id,
+        "request_id": body.request_id,
+        "chat_id": body.chat.id if body.chat else None,
+    }
     try:
         data_tg = body.text
         if not data_tg:
@@ -68,10 +77,25 @@ async def create_tasks(
         list_result = result.scalars().all()
 
         if list_result:
-            data_vac = [
-                VacancyTG.model_validate(item).model_dump() for item in list_result
-            ]
-            logger.info("Data found and sent to redis: %s", len(data_vac))
+            data_vac = []
+            validation_errors = 0
+            for item in list_result:
+                try:
+                    validated = VacancyTG.model_validate(item)
+                    data_vac.append(validated.model_dump())
+                except Exception as e:
+                    validation_errors += 1
+                    logger.error(
+                        f"Failed to validate vacancy {getattr(item, 'id_vacancy', 'unknown')}: {e}",
+                        exc_info=True,
+                        extra=log_extra,
+                    )
+                    continue
+
+            logger.info(
+                f"Found {len(data_vac)} vacancies (filtered from {len(list_result)}, errors: {validation_errors})",
+                extra=log_extra,
+            )
         else:
             search_terms = ",".join(data_tg) if isinstance(data_tg, list) else data_tg
             data_vac = f"Nothing found for your search query: {search_terms}"
@@ -82,6 +106,7 @@ async def create_tasks(
         data_dict = {
             "data": data_vac,
             "chat_id": body.chat.id,
+            "request_id": body.request_id,
         }
         payload = json.dumps(data_dict, ensure_ascii=False)
         try:

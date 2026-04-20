@@ -1,3 +1,4 @@
+from uuid import uuid4
 from aiogram import types, Router, F
 from aiogram.filters import Command
 
@@ -50,9 +51,13 @@ async def process_search(callback: types.CallbackQuery):
     logger.error("Callback info -2: %s", callback)
 
     id_chat = callback.message.chat.id
+    user_id = callback.from_user.id
+    request_id = str(uuid4())
     payload = {
         "chat": {"id": id_chat},
         "text": selected,
+        "user_id": user_id,
+        "request_id": request_id,
     }
 
     result_app = await handler_message(message_dict=payload)
