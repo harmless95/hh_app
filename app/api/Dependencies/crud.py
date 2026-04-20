@@ -2,37 +2,48 @@ from typing import List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from fastapi import HTTPException
+from sqlalchemy.dialects.postgresql import insert
 
 from core.model import Vacancy, VacancyData
 from core.config import logger
 
 
 async def data_save_db(session: AsyncSession, data: List[Vacancy]):
-    id_data_st = [st.id_vacancy for st in data]
-    stmt = select(VacancyData.id_vacancy).where(VacancyData.id_vacancy.in_(id_data_st))
+    if not data:
+        return {"saved": 0}
+
+        # Проверяем дубликаты
+    valid_ids = [v.id_vacancy for v in data if v.id_vacancy]
+    stmt = select(VacancyData.id_vacancy).where(VacancyData.id_vacancy.in_(valid_ids))
     result = await session.execute(stmt)
-    vac = set(result.scalars().all())
+    existing_ids = set(result.scalars().all())
 
-    new_vacancy = []
-    for dt in data:
-        if dt.id_vacancy in vac:
-            continue
+    # Подготавливаем новые данные
+    new_vacancies = []
+    for vacancy in data:
+        if vacancy.id_vacancy not in existing_ids:
+            new_vacancies.append(
+                {
+                    "id_vacancy": vacancy.id_vacancy,
+                    "name_vacancy": vacancy.name_vacancy.lower(),
+                    "name_company": (
+                        vacancy.name_company.lower() if vacancy.name_company else None
+                    ),
+                    "link": vacancy.link,
+                    "skills": [skill.lower() for skill in (vacancy.skills or [])],
+                }
+            )
 
-        lower_skills = [skill.lower() for skill in (dt.skills or [])]
+    if not new_vacancies:
+        return {"saved": 0}
 
-        # Создаем объект модели, приводя строковые поля к lower()
-        new_obj = VacancyData(
-            id_vacancy=dt.id_vacancy,
-            name_vacancy=dt.name_vacancy.lower(),
-            name_company=dt.name_company.lower() if dt.name_company else None,
-            link=dt.link,  # Ссылки лучше не трогать
-            skills=lower_skills,
-        )
-
-        new_vacancy.append(new_obj)
-    session.add_all(new_vacancy)
+    # Массовая вставка (один запрос!)
     try:
+        stmt = insert(VacancyData).values(new_vacancies)
+        # Если есть уникальный индекс по id_vacancy:
+        stmt = stmt.on_conflict_do_nothing()
+
+        await session.execute(stmt)
         await session.commit()
 
         logger.info(f"Bulk inserted {len(new_vacancies)} vacancies")

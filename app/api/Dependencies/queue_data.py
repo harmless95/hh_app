@@ -48,21 +48,35 @@ async def create_tasks(
             "chat_id": body.chat.id,
         }
         payload = json.dumps(data_dict, ensure_ascii=False)
-        await redis_client.publish(redis_channel, payload)
+        try:
+            await asyncio.wait_for(redis_client.ping(), timeout=2.0)
+        except asyncio.TimeoutError:
             logger.error("Redis ping timeout", extra=log_extra)
+            return
+        except Exception as e:
             logger.error(f"Redis connection lost: {e}", extra=log_extra)
+            return
+
+        await asyncio.wait_for(
+            redis_client.publish(redis_channel, payload), timeout=5.0
+        )
+        duration_ms = (time.time() - start_time) * 1000
         logger.info(
             f"Task completed in {duration_ms:.2f}ms",
             extra={**log_extra, "duration_ms": duration_ms},
         )
+
+    except asyncio.TimeoutError:
+        duration_ms = (time.time() - start_time) * 1000
         logger.error(
             "Task timeout",
             exc_info=True,
             extra={**log_extra, "duration_ms": duration_ms},
         )
 
+        await send_error_to_redis(body, "Превышено время ожидания ответа от сервера")
+
     except Exception:
-        logger.exception("Error in TaskIQ worker")
         duration_ms = (time.time() - start_time) * 1000
         logger.error(
             "Error in TaskIQ worker",
@@ -70,3 +84,7 @@ async def create_tasks(
             extra={**log_extra, "duration_ms": duration_ms},
         )
 
+        await send_error_to_redis(
+            body,
+            "Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.",
+        )
