@@ -34,11 +34,17 @@ async def save_data(
 async def get_vacancy(
     data_tg: DataTG,
 ):
-    logger.info("Data obtained from TG.: %s", data_tg)
-    await create_tasks.kiq(data_tg)
-    return {
-        "status": "Обработка данных",
+    start = time.time()
+    log_extra = {
+        "user_id": data_tg.user_id,
+        "request_id": data_tg.request_id,
+        "chat_id": data_tg.chat.id if data_tg.chat else None,
     }
+    logger.info(
+        "Data obtained from TG.: %s",
+        data_tg,
+        extra=log_extra,
+    )
     # 1. Проверяем здоровье системы
     system_status = await health_checker.get_system_status()
 
@@ -85,3 +91,42 @@ async def get_vacancy(
     #         "details": "Все воркеры заняты или недоступны",
     #         "code": "WORKERS_UNAVAILABLE",
     #     }
+    try:
+        await create_tasks.kiq(data_tg)
+        duration_ms = (time.time() - start) * 1000
+        logger.info(
+            f"Task queued successfully",
+            extra={
+                **log_extra,
+                "duration_ms": duration_ms,
+                "queue_size": system_status["components"]["worker"].get(
+                    "queue_size", 0
+                ),
+            },
+        )
+
+        return {
+            "status": "processing",
+            "message": "Ваш запрос принят и обрабатывается",
+            "request_id": data_tg.request_id,
+            "estimated_time": "1-3 секунды",
+        }
+
+    except Exception as e:
+        duration_ms = (time.time() - start) * 1000
+        logger.error(
+            f"Failed to send task to queue: {type(e).__name__}: {e}",
+            exc_info=True,
+            extra={
+                **log_extra,
+                "duration_ms": duration_ms,
+                "error_type": type(e).__name__,
+            },
+        )
+
+        return {
+            "status": "error",
+            "message": "Не удалось обработать запрос. Пожалуйста, попробуйте позже.",
+            "code": "QUEUE_ERROR",
+            "request_id": data_tg.request_id,
+        }

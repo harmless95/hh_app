@@ -12,6 +12,42 @@ from core.model import help_session, VacancyData, VacancyTG, DataTG
 broker = taskiq_redis.ListQueueBroker(FULL_REDIS_URL)
 
 
+async def send_error_to_redis(body: DataTG, error_message: str):
+    """Отправляет сообщение об ошибке в Redis"""
+
+    log_extra = {
+        "user_id": body.user_id,
+        "request_id": body.request_id,
+        "chat_id": body.chat.id if body.chat else None,
+    }
+
+    try:
+        error_payload = json.dumps(
+            {
+                "data": error_message,
+                "chat_id": body.chat.id,
+                "error": True,
+                "request_id": body.request_id,
+            },
+            ensure_ascii=False,
+        )
+
+        await asyncio.wait_for(
+            redis_client.publish(redis_channel, error_payload), timeout=3.0
+        )
+        logger.debug("Error message sent to Redis", extra=log_extra)
+
+    except asyncio.TimeoutError:
+        logger.error("Timeout sending error to Redis", extra=log_extra)
+
+    except Exception as redis_error:
+        logger.error(
+            f"Failed to send error to Redis: {redis_error}",
+            exc_info=True,
+            extra=log_extra,
+        )
+
+
 @broker.task
 async def create_tasks(
     body: DataTG,
