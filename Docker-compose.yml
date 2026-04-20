@@ -107,8 +107,9 @@ services:
     networks:
       - hh_network
 
-  redis:
+  redis_hh:
     image: redis:latest
+    container_name: redis_hh
     restart: always
     ports:
       - "6379:6379"
